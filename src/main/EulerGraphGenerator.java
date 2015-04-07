@@ -16,6 +16,10 @@ public class EulerGraphGenerator {
 	private int vSize;
 	/** Flag set to true if graph should be directed */
 	private boolean isDirected = false;
+	/** This text will be present in first line of every file which represent directed graph. */
+	private String DIRECTED_TEXT = "directed";
+	/** This text will be present in first line of every file which represent undirected graph. */
+	private String UNDIRECTE_TEXT = "undirected";
 	
 	public EulerGraphGenerator(String[] parameters) {
 		parseParameters(parameters);
@@ -57,7 +61,7 @@ public class EulerGraphGenerator {
 	 * @param v is index of end of new edge. It's value from [0, graphSize()).
 	 */
 	private void addEdge(int u, int v) {
-		System.out.println("Edge (" + u +", " + v + ").");
+//		System.out.println("Edge (" + u +", " + v + ").");
 		edge[u][v] = 1;
 		if (isDirected == false) 
 			edge[v][u] = 1;
@@ -156,7 +160,20 @@ public class EulerGraphGenerator {
 			addFinishEdge(u, startPoint);
 	}
 	
-
+	private void breakeEulerCycle() {
+		// Choose any free edge and create new one in that place (it must break cycle):
+		for (int i = 0; i < vSize; ++i) {
+			int j=0;
+			for ( ; j < vSize; ++j)
+				if (i != j && edge[i][j] == 0) {
+					edge[i][j] = 1;
+					break;
+				}
+			if (j < vSize)
+				break;
+		}
+	}
+	
 	/**
 	 * Save graph in Vertex Format.
 	 * @param fileName which will contain graph structure
@@ -170,6 +187,9 @@ public class EulerGraphGenerator {
 			System.err.println(e.getMessage());
 			return;
 		}
+		// Print first line which contains info about graph structure:
+		file.print(isDirected ? DIRECTED_TEXT : UNDIRECTE_TEXT);
+		file.println(" " + vSize);
 		for (int i = 0; i < vSize; ++i) {
 			file.print("" + i + " : ");
 			for (int j = 0; j < vSize; ++j) {
@@ -223,10 +243,14 @@ public class EulerGraphGenerator {
 		}
 	}
 	
+	private String genFileName() {
+		return "graph" + vSize + "x" + density + (isDirected ? "_directed" : "_undirected");
+	}
+	
 	public static void main(String[] args) {
 		EulerGraphGenerator egen = new EulerGraphGenerator(args);
 		egen.generateEuler();
-		egen.saveInVertexForm("pliczeczek");
+		egen.saveInVertexForm(egen.genFileName());
 	}
 
 }
